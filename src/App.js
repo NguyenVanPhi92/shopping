@@ -1,12 +1,11 @@
-import AccessibleForwardIcon from '@material-ui/icons/AccessibleForward'
+import Header from 'components/Header'
 import './App.css'
 
 function App() {
     return (
-        <div className="App">
-            hi
-            <AccessibleForwardIcon className="fa fa-plus-circle" />
-        </div>
+        <>
+            <Header />
+        </>
     )
 }
 
