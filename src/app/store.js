@@ -1,7 +1,8 @@
-const { configureStore } = require('@reduxjs/toolkit')
+import { configureStore } from '@reduxjs/toolkit'
+import userReducer from 'components/features/Auth/userSlice'
 
 const rootReducer = {
-    counter: '',
+    user: userReducer,
 }
 
 const store = configureStore({

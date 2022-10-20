@@ -1,7 +1,6 @@
 import AppBar from '@material-ui/core/AppBar'
 import Badge from '@material-ui/core/Badge'
 import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import IconButton from '@material-ui/core/IconButton'
 import InputBase from '@material-ui/core/InputBase'
@@ -15,11 +14,15 @@ import CodeIcon from '@material-ui/icons/Code'
 import MailIcon from '@material-ui/icons/Mail'
 import MoreIcon from '@material-ui/icons/MoreVert'
 
-import { Button } from '@material-ui/core'
+import { Box, Button } from '@material-ui/core'
+import { Close } from '@material-ui/icons'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import SearchIcon from '@material-ui/icons/Search'
+import Login from 'components/features/Auth/components/Login'
+import React, { useState } from 'react'
 import Register from 'components/features/Auth/components/Register'
-import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { logout } from 'components/features/Auth/userSlice'
 
 const useStyles = makeStyles(theme => ({
     grow: {
@@ -83,12 +86,31 @@ const useStyles = makeStyles(theme => ({
             display: 'none',
         },
     },
+
+    closeButton: {
+        position: 'absolute',
+        top: theme.spacing(1),
+        right: theme.spacing(1),
+        color: theme.palette.grey[500],
+        zIndex: 1,
+    },
 }))
 
+const MODE = {
+    LOGIN: 'login',
+    REGISTER: 'register',
+}
+
 export default function Header() {
+    const dispatch = useDispatch()
+    const loggedInUser = useSelector(state => state.user.current)
+    const isLoggedIn = !!loggedInUser.id
+
+    const [open, setOpen] = React.useState(false)
+    const [mode, setMode] = useState(MODE.LOGIN)
+
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState(null)
-    const [open, setOpen] = React.useState(false)
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null)
 
     const isMenuOpen = Boolean(anchorEl)
@@ -119,19 +141,26 @@ export default function Header() {
         setMobileMoreAnchorEl(event.currentTarget)
     }
 
+    const handleLogout = () => {
+        dispatch(logout())
+        handleMenuClose()
+    }
+
     const menuId = 'primary-search-account-menu'
     const renderMenu = (
         <Menu
             anchorEl={anchorEl}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             id={menuId}
             keepMounted
             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             open={isMenuOpen}
             onClose={handleMenuClose}
+            getContentAnchorEl={null}
         >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+            <MenuItem onClick={handleLogout}>Log out</MenuItem>
         </Menu>
     )
 
@@ -211,18 +240,25 @@ export default function Header() {
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>
-                        <IconButton
-                            edge="end"
-                            aria-label="account of current user"
-                            aria-controls={menuId}
-                            aria-haspopup="true"
-                            onClick={handleProfileMenuOpen}
-                            color="inherit"
-                        >
-                            <AccountCircle />
-                        </IconButton>
 
-                        <Button onClick={handleClickOpen}>Register</Button>
+                        {isLoggedIn && (
+                            <IconButton
+                                edge="end"
+                                aria-label="account of current user"
+                                aria-controls={menuId}
+                                aria-haspopup="true"
+                                onClick={handleProfileMenuOpen}
+                                color="inherit"
+                            >
+                                <AccountCircle />
+                            </IconButton>
+                        )}
+
+                        {!isLoggedIn && (
+                            <Button color="inherit" onClick={handleClickOpen}>
+                                Register
+                            </Button>
+                        )}
                     </div>
                     <div className={classes.sectionMobile}>
                         <IconButton
@@ -241,14 +277,35 @@ export default function Header() {
             {renderMenu}
 
             <Dialog open={open} onClose={handleClose} disableEscapeKeyDown disableBackdropClick>
+                <IconButton className={classes.closeButton} onClick={handleClose}>
+                    <Close />
+                </IconButton>
+
                 <DialogContent>
-                    <Register />
+                    {mode === MODE.REGISTER && (
+                        <>
+                            <Register closeDialog={handleClose} />
+
+                            <Box textAlign="center">
+                                <Button color="primary" onClick={() => setMode(MODE.LOGIN)}>
+                                    Already have an account. Login here
+                                </Button>
+                            </Box>
+                        </>
+                    )}
+
+                    {mode === MODE.LOGIN && (
+                        <>
+                            <Login closeDialog={handleClose} />
+
+                            <Box textAlign="center">
+                                <Button color="primary" onClick={() => setMode(MODE.REGISTER)}>
+                                    Don't have an account. Register here
+                                </Button>
+                            </Box>
+                        </>
+                    )}
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary" autoFocus>
-                        Cancel
-                    </Button>
-                </DialogActions>
             </Dialog>
         </div>
     )
