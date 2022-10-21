@@ -7,7 +7,9 @@ Product.propTypes = {
 }
 
 function Product({ product }) {
-    const thumbnailUrl = product.thumbnail ? `${STATIC_HOST}${product.thumbnail?.url}` : THUMBNAIL_PLACEHOLDER
+    const thumbnailUrl = product.thumbnail
+        ? `${STATIC_HOST}${product.thumbnail?.url}`
+        : THUMBNAIL_PLACEHOLDER[Math.floor(Math.random() * THUMBNAIL_PLACEHOLDER.length)]
 
     return (
         <Box padding={1} minHeight="215px">
