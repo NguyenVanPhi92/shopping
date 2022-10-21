@@ -9,9 +9,9 @@ function App() {
             <Header />
 
             <Switch>
-                <Redirect from="/home" to="/" exact />
+                <Redirect from="/" to="/products" exact />
 
-                <Route path="/" component={ProductFeature} />
+                <Route path="/products" component={ProductFeature} />
             </Switch>
         </>
     )
