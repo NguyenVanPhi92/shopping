@@ -15,7 +15,7 @@ import MailIcon from '@material-ui/icons/Mail'
 import MoreIcon from '@material-ui/icons/MoreVert'
 
 import { Box, Button } from '@material-ui/core'
-import { Close } from '@material-ui/icons'
+import { Close, ShoppingCart } from '@material-ui/icons'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import SearchIcon from '@material-ui/icons/Search'
 import Login from 'components/features/Auth/components/Login'
@@ -23,6 +23,8 @@ import React, { useState } from 'react'
 import Register from 'components/features/Auth/components/Register'
 import { useDispatch, useSelector } from 'react-redux'
 import { logout } from 'components/features/Auth/userSlice'
+import { cartItemsCountSelector } from 'components/features/Cart/selectors'
+import { Link, useHistory } from 'react-router-dom'
 
 const useStyles = makeStyles(theme => ({
     grow: {
@@ -105,6 +107,8 @@ export default function Header() {
     const dispatch = useDispatch()
     const loggedInUser = useSelector(state => state.user.current)
     const isLoggedIn = !!loggedInUser.id
+    const cartItemsCount = useSelector(cartItemsCountSelector)
+    const history = useHistory()
 
     const [open, setOpen] = React.useState(false)
     const [mode, setMode] = useState(MODE.LOGIN)
@@ -144,6 +148,10 @@ export default function Header() {
     const handleLogout = () => {
         dispatch(logout())
         handleMenuClose()
+    }
+
+    const handleCartClick = () => {
+        history.push('/cart')
     }
 
     const menuId = 'primary-search-account-menu'
@@ -212,9 +220,17 @@ export default function Header() {
                     <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="open drawer">
                         <CodeIcon />
                     </IconButton>
-                    <Typography className={classes.title} variant="h6" noWrap>
-                        Shopping
-                    </Typography>
+                    <Link
+                        to="/"
+                        style={{
+                            textDecoration: 'none',
+                            color: '#fff',
+                        }}
+                    >
+                        <Typography className={classes.title} variant="h6" noWrap>
+                            Shopping
+                        </Typography>
+                    </Link>
                     <div className={classes.search}>
                         <div className={classes.searchIcon}>
                             <SearchIcon />
@@ -230,9 +246,9 @@ export default function Header() {
                     </div>
                     <div className={classes.grow} />
                     <div className={classes.sectionDesktop}>
-                        <IconButton aria-label="show 4 new mails" color="inherit">
-                            <Badge badgeContent={4} color="secondary">
-                                <MailIcon />
+                        <IconButton aria-label="show 4 new mails" color="inherit" onClick={handleCartClick}>
+                            <Badge badgeContent={cartItemsCount} color="secondary">
+                                <ShoppingCart />
                             </Badge>
                         </IconButton>
                         <IconButton aria-label="show 17 new notifications" color="inherit">

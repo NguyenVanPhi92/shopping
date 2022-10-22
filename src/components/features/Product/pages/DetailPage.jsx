@@ -8,6 +8,8 @@ import ProductThumbnail from '../components/ProductThumbnail'
 import ProductDescription from '../components/Menu/ProductDescription'
 import ProductAdditional from '../components/Menu/ProductAdditional'
 import ProductReviews from '../components/Menu/ProductReviews'
+import { useDispatch } from 'react-redux'
+import { addToCart } from 'components/features/Cart/cartSlice'
 
 DetailPage.propTypes = {}
 
@@ -46,6 +48,7 @@ function DetailPage(props) {
         url,
     } = useRouteMatch()
     const { product, loading } = useProductDetail(productId)
+    const dispatch = useDispatch()
 
     if (loading) {
         return (
@@ -57,6 +60,13 @@ function DetailPage(props) {
 
     const handleAddToCartSubmit = formValues => {
         console.log({ formValues })
+        const action = addToCart({
+            id: product.id,
+            product,
+            quantity: formValues.quantity,
+        })
+        console.log({ action })
+        dispatch(action)
     }
 
     return (
