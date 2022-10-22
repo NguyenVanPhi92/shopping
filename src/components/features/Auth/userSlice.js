@@ -6,7 +6,6 @@ import StorageKeys from 'constants/storage-key'
 export const register = createAsyncThunk('user/register', async payload => {
     // call API to register
     const data = await userApi.register(payload)
-    console.log({ data })
     // save data to local storage
     localStorage.setItem(StorageKeys.TOKEN, data.jwt)
     localStorage.setItem(StorageKeys.USER, JSON.stringify(data.user))
@@ -16,7 +15,6 @@ export const register = createAsyncThunk('user/register', async payload => {
 export const login = createAsyncThunk('user/login', async payload => {
     // call API to login
     const data = await userApi.login(payload)
-    console.log({ data })
     // save data to local storage
     localStorage.setItem('access_token', data.jwt)
     localStorage.setItem('user', JSON.stringify(data.user))
@@ -28,6 +26,7 @@ const useSlice = createSlice({
     name: 'user',
     initialState: {
         current: JSON.parse(localStorage.getItem(StorageKeys.USER)) || {},
+        loginForm: false,
     },
     reducers: {
         logout(state) {
@@ -36,6 +35,10 @@ const useSlice = createSlice({
             localStorage.removeItem(StorageKeys.TOKEN)
 
             state.current = {}
+        },
+
+        openModelLogin(state) {
+            state.loginForm = !state.loginForm
         },
     },
 
@@ -52,5 +55,5 @@ const useSlice = createSlice({
 })
 
 const { reducer, actions } = useSlice
-export const { logout } = actions
+export const { logout, openModelLogin } = actions
 export default reducer

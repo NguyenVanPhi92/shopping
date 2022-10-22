@@ -22,7 +22,7 @@ import Login from 'components/features/Auth/components/Login'
 import React, { useState } from 'react'
 import Register from 'components/features/Auth/components/Register'
 import { useDispatch, useSelector } from 'react-redux'
-import { logout } from 'components/features/Auth/userSlice'
+import { logout, openModelLogin } from 'components/features/Auth/userSlice'
 import { cartItemsCountSelector } from 'components/features/Cart/selectors'
 import { Link, useHistory } from 'react-router-dom'
 
@@ -107,10 +107,13 @@ export default function Header() {
     const dispatch = useDispatch()
     const loggedInUser = useSelector(state => state.user.current)
     const isLoggedIn = !!loggedInUser.id
+    const showModelLogin = useSelector(state => state.user.loginForm)
     const cartItemsCount = useSelector(cartItemsCountSelector)
     const history = useHistory()
 
-    const [open, setOpen] = React.useState(false)
+    console.log({ showModelLogin })
+
+    // const [open, setOpen] = React.useState(showModelLogin)
     const [mode, setMode] = useState(MODE.LOGIN)
 
     const classes = useStyles()
@@ -121,11 +124,12 @@ export default function Header() {
     const isMobileMenuOpen = Boolean(mobileMoreAnchorEl)
 
     const handleClickOpen = () => {
-        setOpen(true)
+        dispatch(openModelLogin())
+        // setOpen(true)
     }
 
     const handleClose = () => {
-        setOpen(false)
+        dispatch(openModelLogin())
     }
 
     const handleProfileMenuOpen = event => {
@@ -292,7 +296,7 @@ export default function Header() {
             {renderMobileMenu}
             {renderMenu}
 
-            <Dialog open={open} onClose={handleClose} disableEscapeKeyDown disableBackdropClick>
+            <Dialog open={showModelLogin} onClose={handleClose} disableEscapeKeyDown disableBackdropClick>
                 <IconButton className={classes.closeButton} onClick={handleClose}>
                     <Close />
                 </IconButton>

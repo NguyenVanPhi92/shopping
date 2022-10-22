@@ -1,10 +1,13 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Button } from '@material-ui/core'
+import { Button, CircularProgress } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import QuantityField from 'components/form-controls/QuantityField/QuantityField'
 import PropTypes from 'prop-types'
+import clsx from 'clsx'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import { useSnackbar } from 'notistack'
 
 AddToCartForm.propTypes = {
     onSubmit: PropTypes.func,
@@ -22,11 +25,6 @@ const useStyles = makeStyles(theme => ({
     title: {
         textAlign: 'center',
     },
-    submit: {
-        marginTop: '15px',
-        marginBottom: '15px',
-    },
-
     progress: {
         position: 'absolute',
         top: theme.spacing(1),
@@ -37,6 +35,10 @@ const useStyles = makeStyles(theme => ({
 
 function AddToCartForm({ onSubmit = null }) {
     const classes = useStyles()
+    const [loadingBtn, setLoadingBtn] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const { enqueueSnackbar } = useSnackbar()
+    const timer = useRef()
 
     const schema = yup.object().shape({
         quantity: yup
@@ -46,6 +48,16 @@ function AddToCartForm({ onSubmit = null }) {
             .typeError('Please enter a number'),
     })
 
+    const buttonClassname = clsx({
+        [classes.buttonSuccess]: success,
+    })
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(timer.current)
+        }
+    }, [])
+
     const form = useForm({
         defaultValues: {
             quantity: 1,
@@ -53,24 +65,35 @@ function AddToCartForm({ onSubmit = null }) {
         resolver: yupResolver(schema),
     })
 
-    const handleSubmit = values => {
+    const handleButtonClick = values => {
         if (!onSubmit) return
 
-        onSubmit(values)
+        if (!loadingBtn) {
+            setSuccess(false)
+            setLoadingBtn(true)
+            timer.current = window.setTimeout(() => {
+                setSuccess(true)
+                setLoadingBtn(false)
+                enqueueSnackbar('add product to cart success', { variant: 'success' })
+                onSubmit(values)
+            }, 600)
+        }
     }
 
     return (
-        <form className="AddToCartForm" onSubmit={form.handleSubmit(handleSubmit)}>
+        <form className="AddToCartForm" onSubmit={form.handleSubmit(handleButtonClick)}>
             <QuantityField form={form} name="quantity" label="Quantity" />
 
             <Button
-                style={{ width: '200px' }}
-                className={classes.submit}
+                style={{ width: '200px', marginTop: '15px', marginRight: '15px' }}
+                className={buttonClassname}
+                disabled={loadingBtn}
                 variant="contained"
                 type="submit"
                 color="primary"
             >
                 Buy
+                {loadingBtn && <CircularProgress size={24} className={classes.buttonProgress} />}
             </Button>
         </form>
     )

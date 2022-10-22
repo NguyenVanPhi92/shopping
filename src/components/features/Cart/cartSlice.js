@@ -38,6 +38,10 @@ const cartSlice = createSlice({
             const idNeedToRemove = action.payload
             state.cartItems = state.cartItems.filter(x => x.id !== idNeedToRemove)
         },
+
+        clearCart(state) {
+            state.cartItems = []
+        },
     },
 
     // làm việc với asynchronous
@@ -45,5 +49,5 @@ const cartSlice = createSlice({
 })
 
 const { reducer, actions } = cartSlice
-export const { showMiniCart, hideMiniCart, addToCart, removeFromCart, setQuantity } = actions
+export const { showMiniCart, hideMiniCart, addToCart, removeFromCart, setQuantity, clearCart } = actions
 export default reducer

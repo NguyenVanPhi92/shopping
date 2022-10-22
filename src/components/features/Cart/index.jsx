@@ -1,7 +1,6 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { useSelector } from 'react-redux'
-import { cartItemsCountSelector, cartTotalSelector, productTotalSelector } from './selectors'
+import { Box, Button, CircularProgress, IconButton } from '@material-ui/core'
+import Paper from '@material-ui/core/Paper'
+import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
@@ -9,15 +8,20 @@ import TableCell from '@material-ui/core/TableCell'
 import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import Paper from '@material-ui/core/Paper'
-import { Box, Button } from '@material-ui/core'
-import { STATIC_HOST, THUMBNAIL_PLACEHOLDER } from '../../../constants/common'
-import { formatPrice } from 'utils'
+import { useSnackbar } from 'notistack'
+import { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
+import { formatPrice } from 'utils'
+import { STATIC_HOST, THUMBNAIL_PLACEHOLDER } from '../../../constants/common'
+import { openModelLogin } from '../Auth/userSlice'
+import { clearCart } from './cartSlice'
+import { cartItemsCountSelector, cartTotalSelector } from './selectors'
+import { green } from '@material-ui/core/colors'
 
 CartFeature.propTypes = {}
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
     root: {
         width: '800px',
         margin: '50px auto',
@@ -29,21 +33,78 @@ const useStyles = makeStyles({
 
     totalPrice: {
         fontSize: '24px',
+        wrapper: {
+            margin: theme.spacing(1),
+            position: 'relative',
+        },
+        buttonSuccess: {
+            backgroundColor: green[500],
+            '&:hover': {
+                backgroundColor: green[700],
+            },
+        },
+        fabProgress: {
+            color: green[500],
+            position: 'absolute',
+            top: -6,
+            left: -6,
+            zIndex: 1,
+        },
+        buttonProgress: {
+            color: green[500],
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            marginTop: -12,
+            marginLeft: -12,
+        },
     },
-})
+}))
 
 function CartFeature(props) {
+    const classes = useStyles()
+    const history = useHistory()
+    const dispatch = useDispatch()
     const cartTotal = useSelector(cartTotalSelector)
     const cartItemsCount = useSelector(cartItemsCountSelector)
     const cartItems = useSelector(state => state.cart.cartItems)
     const loggedInUser = useSelector(state => state.user.current)
     const isLoggedIn = !!loggedInUser.id
-    const listProduct = cartItems.map((cart, index) => cart.product)
-    const classes = useStyles()
-    const history = useHistory()
+    const listProduct = cartItems.map(cart => cart.product)
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const timer = useRef()
+    const { enqueueSnackbar } = useSnackbar()
+
+    const buttonClassname = clsx({
+        [classes.buttonSuccess]: success,
+    })
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(timer.current)
+        }
+    }, [])
 
     const handleCheckOutCart = () => {
-        // if(!isLoggedIn) return history.push("")
+        if (isLoggedIn) {
+            if (cartItems.length === 0) return enqueueSnackbar('Please select product!!!', { variant: 'warning' })
+
+            if (!loading) {
+                console.log(loading)
+                setSuccess(false)
+                setLoading(true)
+                timer.current = window.setTimeout(() => {
+                    setSuccess(true)
+                    setLoading(false)
+                    dispatch(clearCart())
+                    enqueueSnackbar('Thank you for your purchase!!!', { variant: 'success' })
+                    return history.push('/products')
+                }, 2000)
+            }
+        } else {
+            return dispatch(openModelLogin())
+        }
     }
 
     return (
@@ -112,8 +173,9 @@ function CartFeature(props) {
             </TableContainer>
 
             <Box style={{ width: '300px', margin: '20px auto' }} onClick={handleCheckOutCart}>
-                <Button color="primary" fullWidth variant="contained">
+                <Button color="primary" variant="contained" className={buttonClassname} disabled={loading} fullWidth>
                     Check out
+                    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </Button>
             </Box>
         </>
